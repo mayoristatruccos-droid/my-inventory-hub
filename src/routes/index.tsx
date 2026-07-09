@@ -1,24 +1,146 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Search, Plus, Package } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useProducts } from "@/hooks/use-products";
+import { formatCOP, productsStore } from "@/lib/products-store";
+import { AddProductDialog } from "@/components/add-product-dialog";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Bodega — Buscar referencias" },
+      {
+        name: "description",
+        content:
+          "Busca y gestiona las referencias de tu bodega: imagen, título, SKU, precio mayorista y precio detal.",
+      },
+      { property: "og:title", content: "Bodega — Buscar referencias" },
+      {
+        property: "og:description",
+        content: "Busca y gestiona las referencias de tu bodega.",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const { items, ready } = useProducts();
+  const navigate = useNavigate();
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q),
+    );
+  }, [items, query]);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-6 py-16">
+        <header className="mb-10 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Package className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold leading-none">Bodega</h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              Buscador de referencias
+            </p>
+          </div>
+        </header>
+
+        <div className="flex flex-col items-stretch gap-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por nombre o SKU…"
+              className="h-14 rounded-2xl border-border bg-card pl-12 pr-4 text-base shadow-sm focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+          <Button
+            size="lg"
+            onClick={() => setOpen(true)}
+            className="h-12 rounded-2xl"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Agregar referencia
+          </Button>
+        </div>
+
+        <section className="mt-10 flex-1">
+          {ready && items.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-card/50 px-6 py-12 text-center">
+              <p className="text-sm text-muted-foreground">
+                Aún no tienes referencias. Agrega la primera para empezar.
+              </p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {results.map((p) => (
+                <li key={p.id}>
+                  <Link
+                    to="/producto/$id"
+                    params={{ id: p.id }}
+                    className="flex items-center gap-4 rounded-2xl border border-border bg-card p-3 transition-colors hover:bg-accent"
+                  >
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
+                      {p.image ? (
+                        <img
+                          src={p.image}
+                          alt={p.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                          <Package className="h-5 w-5" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{p.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        SKU {p.sku}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold">
+                        {formatCOP(p.retailPrice)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">detal</p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+              {ready && results.length === 0 && query && (
+                <li className="rounded-2xl border border-dashed border-border bg-card/50 px-6 py-10 text-center text-sm text-muted-foreground">
+                  Sin resultados para “{query}”.
+                </li>
+              )}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <AddProductDialog
+        open={open}
+        onOpenChange={setOpen}
+        onCreated={(p) => {
+          setOpen(false);
+          navigate({ to: "/producto/$id", params: { id: p.id } });
+        }}
+        onSubmit={(data) => productsStore.add(data)}
       />
-    </div>
+    </main>
   );
 }
