@@ -1,10 +1,11 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Plus, Package, X, Clock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/use-products";
 import { formatCOP, productsStore, type Product } from "@/lib/products-store";
 import { AddProductDialog } from "@/components/add-product-dialog";
+import { ProductDetails } from "@/components/product-details";
 
 const RECENT_KEY = "bodega.recentSearches.v1";
 const RECENT_MAX = 8;
@@ -86,8 +87,9 @@ function Index() {
   const [submitted, setSubmitted] = useState("");
   const [open, setOpen] = useState(false);
   const [recent, setRecent] = useState<string[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  
   const { items, ready } = useProducts();
-  const navigate = useNavigate();
 
   useEffect(() => {
     setRecent(loadRecent());
@@ -132,8 +134,10 @@ function Index() {
     const value = raw ?? query;
     const parsed = parseTerms(value);
     setSubmitted(value);
+    setSelectedProductId(null);
     if (raw !== undefined) setQuery(value);
     pushRecent(value);
+    
     if (parsed.length === 1) {
       const exact = items.find(
         (p) =>
@@ -143,7 +147,7 @@ function Index() {
           ),
       );
       if (exact) {
-        navigate({ to: "/producto/$id", params: { id: exact.id } });
+        setSelectedProductId(exact.id);
       }
     }
   };
@@ -151,6 +155,7 @@ function Index() {
   const clearSearch = () => {
     setQuery("");
     setSubmitted("");
+    setSelectedProductId(null);
   };
 
   const removeRecent = (value: string) => {
@@ -245,7 +250,7 @@ function Index() {
           </div>
         </form>
 
-        {!submitted && recent.length > 0 && (
+        {!submitted && recent.length > 0 && !selectedProductId && (
           <section className="mt-6">
             <div className="mb-2 flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -295,6 +300,11 @@ function Index() {
                 Aún no tienes referencias. Agrega la primera para empezar.
               </p>
             </div>
+          ) : selectedProductId ? (
+            <ProductDetails
+              productId={selectedProductId}
+              onClose={() => setSelectedProductId(null)}
+            />
           ) : (
             <>
               {submitted && (
@@ -310,10 +320,9 @@ function Index() {
                   const stock = productsStore.totalStock(p);
                   return (
                     <li key={p.id}>
-                      <Link
-                        to="/producto/$id"
-                        params={{ id: p.id }}
-                        className="flex items-center gap-4 rounded-2xl border border-border bg-card p-3 transition-colors hover:bg-accent"
+                      <button
+                        onClick={() => setSelectedProductId(p.id)}
+                        className="w-full text-left flex items-center gap-4 rounded-2xl border border-border bg-card p-3 transition-colors hover:bg-accent"
                       >
                         <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted">
                           {p.image ? (
@@ -354,7 +363,7 @@ function Index() {
                             </span>
                           </div>
                         </div>
-                      </Link>
+                      </button>
                     </li>
                   );
                 })}
@@ -394,7 +403,7 @@ function Index() {
         onOpenChange={setOpen}
         onCreated={(p) => {
           setOpen(false);
-          navigate({ to: "/producto/$id", params: { id: p.id } });
+          setSelectedProductId(p.id);
         }}
         onSubmit={(data) => productsStore.add(data)}
       />
