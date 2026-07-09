@@ -5,11 +5,26 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { statSync } from "node:fs";
+import { resolve } from "node:path";
+
+const inventoryMtime = (() => {
+  try {
+    return statSync(resolve(__dirname, "src/data/seed.csv")).mtime.toISOString();
+  } catch {
+    return new Date().toISOString();
+  }
+})();
 
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+  },
+  vite: {
+    define: {
+      __INVENTORY_UPDATED_AT__: JSON.stringify(inventoryMtime),
+    },
   },
 });
