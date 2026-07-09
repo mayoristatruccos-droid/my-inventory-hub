@@ -8,7 +8,13 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { statSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { execSync } from "node:child_process";
+
 const inventoryMtime = (() => {
+  try {
+    const gitTime = execSync("git log -1 --format=%cI src/data/seed.csv", { encoding: "utf8" }).trim();
+    if (gitTime) return gitTime;
+  } catch {}
   try {
     return statSync(resolve(__dirname, "src/data/seed.csv")).mtime.toISOString();
   } catch {

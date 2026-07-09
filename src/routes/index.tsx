@@ -7,8 +7,6 @@ import { formatCOP, productsStore, type Product } from "@/lib/products-store";
 import { AddProductDialog } from "@/components/add-product-dialog";
 import { ProductDetails } from "@/components/product-details";
 
-const RECENT_KEY = "bodega.recentSearches.v1";
-const RECENT_MAX = 8;
 
 const MESES = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -27,24 +25,6 @@ function formatInventoryDate(iso: string): string {
 }
 
 
-function loadRecent(): string[] {
-  try {
-    const raw = localStorage.getItem(RECENT_KEY);
-    if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveRecent(list: string[]) {
-  try {
-    localStorage.setItem(RECENT_KEY, JSON.stringify(list));
-  } catch {
-    /* noop */
-  }
-}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -86,14 +66,11 @@ function Index() {
   const [query, setQuery] = useState("");
   const [submitted, setSubmitted] = useState("");
   const [open, setOpen] = useState(false);
-  const [recent, setRecent] = useState<string[]>([]);
+
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   
   const { items, ready } = useProducts();
 
-  useEffect(() => {
-    setRecent(loadRecent());
-  }, []);
 
   const terms = useMemo(() => parseTerms(submitted), [submitted]);
 
@@ -117,18 +94,6 @@ function Index() {
     [items, terms],
   );
 
-  const pushRecent = (q: string) => {
-    const trimmed = q.trim();
-    if (!trimmed) return;
-    setRecent((prev) => {
-      const next = [trimmed, ...prev.filter((x) => x !== trimmed)].slice(
-        0,
-        RECENT_MAX,
-      );
-      saveRecent(next);
-      return next;
-    });
-  };
 
   const runSearch = (raw?: string) => {
     const value = raw ?? query;
@@ -136,7 +101,7 @@ function Index() {
     setSubmitted(value);
     setSelectedProductId(null);
     if (raw !== undefined) setQuery(value);
-    pushRecent(value);
+
     
     if (parsed.length === 1) {
       const exact = items.find(
@@ -158,18 +123,6 @@ function Index() {
     setSelectedProductId(null);
   };
 
-  const removeRecent = (value: string) => {
-    setRecent((prev) => {
-      const next = prev.filter((x) => x !== value);
-      saveRecent(next);
-      return next;
-    });
-  };
-
-  const clearRecent = () => {
-    setRecent([]);
-    saveRecent([]);
-  };
 
   return (
     <main className="min-h-screen bg-background">
@@ -241,48 +194,6 @@ function Index() {
           </div>
         </form>
 
-        {!submitted && recent.length > 0 && !selectedProductId && (
-          <section className="mt-6">
-            <div className="mb-2 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" />
-                Búsquedas recientes
-              </div>
-              <button
-                type="button"
-                onClick={clearRecent}
-                className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <Trash2 className="h-3 w-3" />
-                Limpiar
-              </button>
-            </div>
-            <ul className="flex flex-wrap gap-2">
-              {recent.map((r) => (
-                <li key={r}>
-                  <div className="group flex items-center gap-1 rounded-full border border-border bg-card pl-3 pr-1 py-1 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => runSearch(r)}
-                      className="max-w-[200px] truncate text-left transition-colors hover:text-primary"
-                      title={r}
-                    >
-                      {r}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeRecent(r)}
-                      aria-label={`Eliminar ${r}`}
-                      className="flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
 
         <section className="mt-8 flex-1">
           {ready && items.length === 0 ? (
