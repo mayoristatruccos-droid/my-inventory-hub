@@ -1,21 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Package, Pencil, Trash2, Warehouse } from "lucide-react";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Package, Warehouse } from "lucide-react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProduct } from "@/hooks/use-products";
 import { formatCOP, productsStore } from "@/lib/products-store";
-import { AddProductDialog } from "@/components/add-product-dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/producto/$id")({
   head: ({ params }) => ({
@@ -30,9 +19,7 @@ export const Route = createFileRoute("/producto/$id")({
 function ProductView() {
   const { id } = Route.useParams();
   const { product, ready } = useProduct(id);
-  const [edit, setEdit] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const navigate = useNavigate();
+
 
   const grouped = useMemo(() => {
     if (!product) return { sizes: [] as string[], colors: [] as string[], matrix: {} as Record<string, Record<string, number>> };
