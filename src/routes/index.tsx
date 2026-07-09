@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, Plus, Package, X, Clock, Trash2 } from "lucide-react";
+import { Search, Package, X, Clock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/use-products";
 import { formatCOP, productsStore, type Product } from "@/lib/products-store";
@@ -237,16 +237,7 @@ function Index() {
                 <X className="h-4 w-4" />
               </Button>
             )}
-            <Button
-              type="button"
-              size="lg"
-              variant="secondary"
-              onClick={() => setOpen(true)}
-              className="h-12 rounded-2xl"
-              aria-label="Agregar referencia"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
+
           </div>
         </form>
 
@@ -307,13 +298,6 @@ function Index() {
             />
           ) : (
             <>
-              {submitted && (
-                <p className="mb-3 text-xs text-muted-foreground">
-                  {results.length} resultado
-                  {results.length === 1 ? "" : "s"}
-                  {terms.length > 1 ? ` para ${terms.length} búsquedas` : ""}
-                </p>
-              )}
 
               <ul className="flex flex-col gap-2">
                 {results.map((p) => {
