@@ -360,7 +360,17 @@ function Index() {
             </>
           )}
         </section>
+
+        <footer className="mt-10 border-t border-border pt-4 text-center">
+          <p className="text-xs text-muted-foreground">
+            Última actualización del inventario
+          </p>
+          <p className="mt-1 text-xs font-medium text-foreground">
+            {formatInventoryDate(__INVENTORY_UPDATED_AT__)}
+          </p>
+        </footer>
       </div>
+
 
       <AddProductDialog
         open={open}
