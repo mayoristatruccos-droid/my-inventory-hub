@@ -77,13 +77,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Bodega — Buscador de referencias" },
-      { name: "description", content: "Busca y organiza las referencias de tu bodega: imagen, título, SKU, precio mayorista y precio detal." },
+      { title: "Colombia Moda — Buscar referencias" },
+      { name: "description", content: "Busca una o varias referencias de tu bodega por código, descripción o SKU y consulta precios mayorista y detal." },
       { name: "author", content: "Bodega" },
-      { property: "og:title", content: "Bodega — Buscador de referencias" },
-      { property: "og:description", content: "Busca y organiza las referencias de tu bodega." },
+      { property: "og:title", content: "Colombia Moda — Buscar referencias" },
+      { property: "og:description", content: "Busca una o varias referencias de tu bodega por código, descripción o SKU y consulta precios mayorista y detal." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Colombia Moda — Buscar referencias" },
+      { name: "twitter:description", content: "Busca una o varias referencias de tu bodega por código, descripción o SKU y consulta precios mayorista y detal." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/77e35aee-0395-4e70-abcc-9bb8db0225fd/id-preview-e1393432--c4601a1d-15a4-454a-a76c-595456e47421.lovable.app-1783623191941.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/77e35aee-0395-4e70-abcc-9bb8db0225fd/id-preview-e1393432--c4601a1d-15a4-454a-a76c-595456e47421.lovable.app-1783623191941.png" },
     ],
     links: [
       {

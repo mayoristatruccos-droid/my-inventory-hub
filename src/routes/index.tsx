@@ -10,17 +10,17 @@ import { AddProductDialog } from "@/components/add-product-dialog";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bodega — Buscar referencias" },
+      { title: "Colombia Moda — Buscar referencias" },
       {
         name: "description",
         content:
           "Busca una o varias referencias de tu bodega por código, descripción o SKU y consulta precios mayorista y detal.",
       },
-      { property: "og:title", content: "Bodega — Buscar referencias" },
+      { property: "og:title", content: "Colombia Moda — Buscar referencias" },
       {
         property: "og:description",
         content:
-          "Buscador múltiple de referencias con precios mayorista, detal y stock.",
+          "Busca una o varias referencias de tu bodega por código, descripción o SKU y consulta precios mayorista y detal.",
       },
     ],
   }),
