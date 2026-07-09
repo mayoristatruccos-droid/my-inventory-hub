@@ -66,33 +66,15 @@ function ProductView() {
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6">
           <Button asChild variant="ghost" size="sm" className="-ml-2">
             <Link to="/">
               <ArrowLeft className="mr-1 h-4 w-4" />
               Volver
             </Link>
           </Button>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setEdit(true)}
-              aria-label="Editar"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setConfirmDelete(true)}
-              aria-label="Eliminar"
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
         </div>
+
 
         <article className="flex flex-col gap-6">
           <div className="aspect-square w-full overflow-hidden rounded-3xl border border-border bg-muted">
