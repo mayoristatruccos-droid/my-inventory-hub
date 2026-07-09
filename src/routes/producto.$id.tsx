@@ -1,21 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Package, Pencil, Trash2, Warehouse } from "lucide-react";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Package, Warehouse } from "lucide-react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProduct } from "@/hooks/use-products";
 import { formatCOP, productsStore } from "@/lib/products-store";
-import { AddProductDialog } from "@/components/add-product-dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/producto/$id")({
   head: ({ params }) => ({
@@ -30,9 +19,7 @@ export const Route = createFileRoute("/producto/$id")({
 function ProductView() {
   const { id } = Route.useParams();
   const { product, ready } = useProduct(id);
-  const [edit, setEdit] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const navigate = useNavigate();
+
 
   const grouped = useMemo(() => {
     if (!product) return { sizes: [] as string[], colors: [] as string[], matrix: {} as Record<string, Record<string, number>> };
@@ -79,33 +66,15 @@ function ProductView() {
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6">
           <Button asChild variant="ghost" size="sm" className="-ml-2">
             <Link to="/">
               <ArrowLeft className="mr-1 h-4 w-4" />
               Volver
             </Link>
           </Button>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setEdit(true)}
-              aria-label="Editar"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setConfirmDelete(true)}
-              aria-label="Eliminar"
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
         </div>
+
 
         <article className="flex flex-col gap-6">
           <div className="aspect-square w-full overflow-hidden rounded-3xl border border-border bg-muted">
@@ -253,42 +222,10 @@ function ProductView() {
           )}
         </article>
       </div>
-
-      <AddProductDialog
-        open={edit}
-        onOpenChange={setEdit}
-        initial={product}
-        onSubmit={(data) => {
-          productsStore.update(product.id, data);
-          return { ...product, ...data };
-        }}
-        onCreated={() => setEdit(false)}
-      />
-
-      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar esta referencia?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                productsStore.remove(product.id);
-                navigate({ to: "/" });
-              }}
-            >
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </main>
   );
 }
+
 
 function PriceCard({
   label,
