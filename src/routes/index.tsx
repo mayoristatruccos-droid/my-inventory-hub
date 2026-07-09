@@ -1,11 +1,32 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Search, Plus, Package } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Plus, Package, X, Clock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/use-products";
 import { formatCOP, productsStore, type Product } from "@/lib/products-store";
 import { AddProductDialog } from "@/components/add-product-dialog";
+
+const RECENT_KEY = "bodega.recentSearches.v1";
+const RECENT_MAX = 8;
+
+function loadRecent(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecent(list: string[]) {
+  try {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+  } catch {
+    /* noop */
+  }
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -47,14 +68,18 @@ function Index() {
   const [query, setQuery] = useState("");
   const [submitted, setSubmitted] = useState("");
   const [open, setOpen] = useState(false);
+  const [recent, setRecent] = useState<string[]>([]);
   const { items, ready } = useProducts();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setRecent(loadRecent());
+  }, []);
 
   const terms = useMemo(() => parseTerms(submitted), [submitted]);
 
   const results = useMemo(() => {
     if (terms.length === 0) return items;
-    // Preserve query order and dedupe
     const seen = new Set<string>();
     const out: Product[] = [];
     for (const term of terms) {
@@ -73,10 +98,25 @@ function Index() {
     [items, terms],
   );
 
-  const runSearch = () => {
-    const parsed = parseTerms(query);
-    setSubmitted(query);
-    // Single term with exact reference match → go straight to detail
+  const pushRecent = (q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed) return;
+    setRecent((prev) => {
+      const next = [trimmed, ...prev.filter((x) => x !== trimmed)].slice(
+        0,
+        RECENT_MAX,
+      );
+      saveRecent(next);
+      return next;
+    });
+  };
+
+  const runSearch = (raw?: string) => {
+    const value = raw ?? query;
+    const parsed = parseTerms(value);
+    setSubmitted(value);
+    if (raw !== undefined) setQuery(value);
+    pushRecent(value);
     if (parsed.length === 1) {
       const exact = items.find(
         (p) =>
@@ -89,6 +129,24 @@ function Index() {
         navigate({ to: "/producto/$id", params: { id: exact.id } });
       }
     }
+  };
+
+  const clearSearch = () => {
+    setQuery("");
+    setSubmitted("");
+  };
+
+  const removeRecent = (value: string) => {
+    setRecent((prev) => {
+      const next = prev.filter((x) => x !== value);
+      saveRecent(next);
+      return next;
+    });
+  };
+
+  const clearRecent = () => {
+    setRecent([]);
+    saveRecent([]);
   };
 
   return (
@@ -129,16 +187,34 @@ function Index() {
               rows={2}
               className="min-h-14 w-full resize-y rounded-2xl border border-border bg-card px-12 py-4 text-base shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
             />
+            {(query || submitted) && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                aria-label="Limpiar búsqueda"
+                className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
           <div className="flex gap-2">
-            <Button
-              type="submit"
-              size="lg"
-              className="h-12 flex-1 rounded-2xl"
-            >
+            <Button type="submit" size="lg" className="h-12 flex-1 rounded-2xl">
               <Search className="mr-2 h-4 w-4" />
               Buscar {terms.length > 1 ? `(${terms.length})` : ""}
             </Button>
+            {(query || submitted) && (
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                onClick={clearSearch}
+                className="h-12 rounded-2xl"
+                aria-label="Limpiar"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               type="button"
               size="lg"
@@ -151,6 +227,49 @@ function Index() {
             </Button>
           </div>
         </form>
+
+        {!submitted && recent.length > 0 && (
+          <section className="mt-6">
+            <div className="mb-2 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                Búsquedas recientes
+              </div>
+              <button
+                type="button"
+                onClick={clearRecent}
+                className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Trash2 className="h-3 w-3" />
+                Limpiar
+              </button>
+            </div>
+            <ul className="flex flex-wrap gap-2">
+              {recent.map((r) => (
+                <li key={r}>
+                  <div className="group flex items-center gap-1 rounded-full border border-border bg-card pl-3 pr-1 py-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => runSearch(r)}
+                      className="max-w-[200px] truncate text-left transition-colors hover:text-primary"
+                      title={r}
+                    >
+                      {r}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeRecent(r)}
+                      aria-label={`Eliminar ${r}`}
+                      className="flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className="mt-8 flex-1">
           {ready && items.length === 0 ? (
@@ -165,9 +284,7 @@ function Index() {
                 <p className="mb-3 text-xs text-muted-foreground">
                   {results.length} resultado
                   {results.length === 1 ? "" : "s"}
-                  {terms.length > 1
-                    ? ` para ${terms.length} búsquedas`
-                    : ""}
+                  {terms.length > 1 ? ` para ${terms.length} búsquedas` : ""}
                 </p>
               )}
 
