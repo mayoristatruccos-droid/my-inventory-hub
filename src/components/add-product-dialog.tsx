@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Product } from "@/lib/products-store";
 
-type Payload = Omit<Product, "id" | "createdAt">;
+type Payload = Omit<Product, "id" | "createdAt" | "variants">;
 
 type Props = {
   open: boolean;
@@ -30,8 +30,9 @@ export function AddProductDialog({
   onCreated,
   initial,
 }: Props) {
-  const [title, setTitle] = useState("");
-  const [sku, setSku] = useState("");
+  const [reference, setReference] = useState("");
+  const [description, setDescription] = useState("");
+  const [warehouse, setWarehouse] = useState("");
   const [image, setImage] = useState("");
   const [wholesale, setWholesale] = useState("");
   const [retail, setRetail] = useState("");
@@ -39,8 +40,9 @@ export function AddProductDialog({
 
   useEffect(() => {
     if (open) {
-      setTitle(initial?.title ?? "");
-      setSku(initial?.sku ?? "");
+      setReference(initial?.reference ?? "");
+      setDescription(initial?.description ?? "");
+      setWarehouse(initial?.warehouse ?? "");
       setImage(initial?.image ?? "");
       setWholesale(initial ? String(initial.wholesalePrice) : "");
       setRetail(initial ? String(initial.retailPrice) : "");
@@ -55,10 +57,11 @@ export function AddProductDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !sku.trim()) return;
+    if (!reference.trim() || !description.trim()) return;
     const created = onSubmit({
-      title: title.trim(),
-      sku: sku.trim(),
+      reference: reference.trim(),
+      description: description.trim(),
+      warehouse: warehouse.trim(),
       image,
       wholesalePrice: Number(wholesale) || 0,
       retailPrice: Number(retail) || 0,
@@ -121,23 +124,33 @@ export function AddProductDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <Label htmlFor="title">Título</Label>
+              <Label htmlFor="reference">Referencia</Label>
               <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ej. Camiseta básica negra"
+                id="reference"
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                placeholder="Ej. B01020061"
+                disabled={!!initial}
                 required
               />
             </div>
             <div className="col-span-2">
-              <Label htmlFor="sku">Código / SKU</Label>
+              <Label htmlFor="description">Descripción</Label>
               <Input
-                id="sku"
-                value={sku}
-                onChange={(e) => setSku(e.target.value)}
-                placeholder="Ej. CAM-001"
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Ej. BERMUDA CARGO"
                 required
+              />
+            </div>
+            <div className="col-span-2">
+              <Label htmlFor="warehouse">Bodega</Label>
+              <Input
+                id="warehouse"
+                value={warehouse}
+                onChange={(e) => setWarehouse(e.target.value)}
+                placeholder="Ej. PRINCIPAL 1004"
               />
             </div>
             <div>
