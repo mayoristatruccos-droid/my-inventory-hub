@@ -9,6 +9,23 @@ import { AddProductDialog } from "@/components/add-product-dialog";
 const RECENT_KEY = "bodega.recentSearches.v1";
 const RECENT_MAX = 8;
 
+const MESES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+function formatInventoryDate(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  const day = d.getDate();
+  const month = MESES[d.getMonth()];
+  const year = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${day} de ${month} de ${year} — ${hh}:${mm}`;
+}
+
+
 function loadRecent(): string[] {
   try {
     const raw = localStorage.getItem(RECENT_KEY);
@@ -360,7 +377,17 @@ function Index() {
             </>
           )}
         </section>
+
+        <footer className="mt-10 border-t border-border pt-4 text-center">
+          <p className="text-xs text-muted-foreground">
+            Última actualización del inventario
+          </p>
+          <p className="mt-1 text-xs font-medium text-foreground">
+            {formatInventoryDate(__INVENTORY_UPDATED_AT__)}
+          </p>
+        </footer>
       </div>
+
 
       <AddProductDialog
         open={open}
