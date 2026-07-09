@@ -222,42 +222,10 @@ function ProductView() {
           )}
         </article>
       </div>
-
-      <AddProductDialog
-        open={edit}
-        onOpenChange={setEdit}
-        initial={product}
-        onSubmit={(data) => {
-          productsStore.update(product.id, data);
-          return { ...product, ...data };
-        }}
-        onCreated={() => setEdit(false)}
-      />
-
-      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar esta referencia?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                productsStore.remove(product.id);
-                navigate({ to: "/" });
-              }}
-            >
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </main>
   );
 }
+
 
 function PriceCard({
   label,
